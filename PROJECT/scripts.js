@@ -181,3 +181,67 @@ function formClear(){
     amount.value = ""
     expense.focus()
 }
+// ID do botão de tradução
+const translateButton = document.getElementById("translateButton");
+
+// Adiciona um evento de clique ao botão de tradução
+translateButton.addEventListener("click", () => {
+    // Seleciona todos os elementos de texto que precisam ser traduzidos
+    const elementsToTranslate = [
+        document.querySelector("aside header h2"), // Total das despesas
+        document.querySelector("aside header p span"), // Quantidade de despesas
+        document.querySelector("form h1"), // Título do formulário
+        document.querySelector("form button"), // Texto do botão do formulário
+        ...document.querySelectorAll(".expense-info strong"), // Nomes das despesas
+        ...document.querySelectorAll(".expense-info span") // Categorias das despesas
+    ];
+
+    // Chave da API do Google Translate
+    const apiKey = 'YOUR_GOOGLE_TRANSLATE_API_KEY'; // Substitua pela sua chave de API
+
+    // Idioma de destino (inglês)
+    const targetLanguage = 'en';
+
+    // Array para armazenar todas as promessas de tradução
+    const translationPromises = [];
+
+    // Função para traduzir um texto usando a API do Google Translate
+    async function translateText(text) {
+        const url = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                q: text,
+                target: targetLanguage,
+            }),
+        });
+        const data = await response.json();
+        return data.data.translations[0].translatedText;
+    }
+
+    // Itera sobre todos os elementos de texto a serem traduzidos
+    elementsToTranslate.forEach(element => {
+        const text = element.textContent.trim();
+
+        // Se o texto estiver vazio, não traduza
+        if (text === '') return;
+
+        // Cria uma promessa de tradução para cada elemento
+        const translationPromise = translateText(text).then(translatedText => {
+            element.textContent = translatedText; // Atualiza o texto traduzido no elemento
+        });
+
+        translationPromises.push(translationPromise); // Adiciona a promessa ao array
+    });
+
+    // Aguarda todas as traduções serem concluídas antes de atualizar os totais
+    Promise.all(translationPromises).then(() => {
+        updateTotals(); // Atualiza os totais após a tradução
+    }).catch(error => {
+        console.error('Erro ao traduzir:', error);
+        alert('Não foi possível traduzir o conteúdo.');
+    });
+});
