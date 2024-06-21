@@ -300,4 +300,18 @@ aside ul {
     main section form {
         min-width: 100%;
     }
+    main section aside ul {
+        width: 100%;
+        height: auto;
+        overflow: auto;
+    }
+}
+@media (max-widht: 620px) {
+    .inputs-row {
+        flex-direction: column;
+    }
+    .inputs-row fieldset:last-child input {
+        max-width: auto;
+        min-width: 100%;
+    }
 }
